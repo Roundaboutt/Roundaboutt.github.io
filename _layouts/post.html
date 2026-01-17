@@ -5,10 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ page.title }} - {{ site.title }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+    <style>
+        /* 基础样式补丁 */
+        .prose h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2rem; border-left: 4px solid #6366f1; padding-left: 1rem; color: #1f2937; text-indent: 0 !important; }
+        .prose img { border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); text-indent: 0 !important; }
+        
+        /* 核心缩进与正文颜色 */
+        .prose p { text-indent: 2em !important; margin-bottom: 1.5rem; color: #374151; }
+        .prose li p, .prose blockquote p { text-indent: 0 !important; }
+        .prose h1, .prose h2, .prose h3, .prose h4 { text-indent: 0 !important; }
+
+        /* 代码块深度美化：黑客质感终端 */
+        .prose pre {
+            background-color: #1a1b26 !important; /* 深蓝黑背景 */
+            border-radius: 12px !important;
+            padding: 1.25rem !important;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5) !important;
+            border: 1px solid #2f334d !important;
+            text-indent: 0 !important;
+            margin: 2rem 0 !important;
+        }
+        .prose code {
+            font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace !important;
+            font-size: 0.9rem !important;
+            background: #f3f4f6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+        }
+        .prose pre code {
+            background: transparent !important;
+            padding: 0 !important;
+            color: #a9b1d6 !important; /* 基础文字颜色 */
+            line-height: 1.6 !important;
+        }
+
+        /* 针对 CUDA 关键字的对比度微调 */
+        .hljs-keyword, .hljs-type { color: #bb9af7 !important; font-weight: bold; } /* 关键字紫色 */
+        .hljs-title.function_ { color: #7aa2f7 !important; } /* 函数名亮蓝 */
+        .hljs-comment { color: #565f89 !important; font-style: italic; } /* 注释暗蓝 */
+        .hljs-number { color: #ff9e64 !important; } /* 数字亮橙 */
+        
+        .prose blockquote { border-left: 4px solid #e5e7eb; font-style: italic; color: #6b7280; padding-left: 1.5rem; }
+    </style>
 </head>
 <body class="bg-gray-50 text-gray-800 leading-relaxed">
-
     <nav class="bg-white border-b sticky top-0 z-50">
         <div class="max-w-3xl mx-auto px-4 py-4 flex justify-between items-center">
             <a href="/" class="text-indigo-600 font-bold hover:text-indigo-800 transition-colors">← 返回首页</a>
@@ -30,7 +71,7 @@
                     {{ page.title }}
                 </h1>
                 <div class="text-gray-400 text-sm flex justify-center items-center gap-4">
-                    <time datetime="{{ page.date | date_to_xmlschema }}">📅 {{ page.date | date: "%Y年%m月%d日" }}</time>
+                    <time>📅 {{ page.date | date: "%Y年%m月%d日" }}</time>
                     <span> {{ site.author }}</span>
                 </div>
             </header>
@@ -38,58 +79,11 @@
             <div class="prose prose-indigo prose-lg max-w-none bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100">
                 {{ content }}
             </div>
-
-            <footer class="mt-12 pt-8 border-t border-gray-200">
-                <div class="flex justify-between items-center text-sm text-gray-500">
-                    <p>© {{ site.author }}</p>
-                    <div class="flex gap-4">
-                        {% if page.previous.url %}
-                        <a href="{{ page.previous.url }}" class="hover:text-indigo-600">上一篇</a>
-                        {% endif %}
-                        {% if page.next.url %}
-                        <a href="{{ page.next.url }}" class="hover:text-indigo-600">下一篇</a>
-                        {% endif %}
-                    </div>
-                </div>
-            </footer>
         </article>
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
     <script>hljs.highlightAll();</script>
-
-    <style>
-        /* 1. 核心缩进逻辑：针对文章正文段落 */
-        .prose p { 
-            text-indent: 2em !important; /* 强制缩进两个中文字符宽 */
-            margin-bottom: 1.5rem; 
-            color: #4b5563; 
-        }
-
-        /* 2. 逻辑修正：特定的非段落区域不应该缩进，否则会产生位移偏差 */
-        .prose h1, .prose h2, .prose h3, .prose h4, 
-        .prose li, .prose blockquote, .prose pre, .prose img {
-            text-indent: 0 !important;
-        }
-
-        /* 3. 列表内部的段落如果缩进会很奇怪，必须重置 */
-        .prose li p {
-            text-indent: 0 !important;
-            margin-bottom: 0.5rem;
-        }
-
-        /* 4. 博文样式美化补丁 */
-        .prose h2 { 
-            font-size: 1.5rem; 
-            font-weight: 700; 
-            margin-top: 2rem; 
-            border-left: 4px solid #6366f1; 
-            padding-left: 1rem; 
-            color: #1f2937; 
-        }
-        .prose img { border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        .prose code { background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
-        .prose blockquote { border-left: 4px solid #e5e7eb; font-style: italic; color: #6b7280; padding-left: 1.5rem; }
-    </style>
 </body>
 </html>
