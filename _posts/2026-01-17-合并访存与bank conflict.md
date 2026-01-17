@@ -2,7 +2,7 @@
 layout: post
 title: "合并访存与 Bank Conflict"
 date: 2026-01-17 18:00:00 +0800
-categories: 代码
+categories: [代码]
 author: "Layla"
 ---
 
