@@ -3,84 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的个人实验室</title>
+    <title>Christina 的研究日志</title>
     <style>
-        /* 这里是 CSS：给网页穿上白大褂 */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            color: #333;
-        }
-        header {
-            background: #2c3e50;
-            color: #fff;
-            padding: 2rem;
-            text-align: center;
-        }
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h2 { color: #2c3e50; border-bottom: 2px solid #2c3e50; }
-        button {
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        button:hover { background-color: #c0392b; }
+        :root { --primary-color: #5d3f6a; --bg-color: #f9f9f9; }
+        body { font-family: sans-serif; background: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        /* 导航栏 */
+        nav { background: #fff; padding: 1rem 10%; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; }
+        nav a { text-decoration: none; color: var(--primary-color); font-weight: bold; }
+
+        /* 主体布局：左边文章，右边侧栏 */
+        .main-container { max-width: 1000px; margin: 2rem auto; display: grid; grid-template-columns: 3fr 1fr; gap: 2rem; padding: 0 1rem; }
+
+        /* 文章卡片 */
+        .post-card { background: #fff; padding: 1.5rem; margin-bottom: 1.5rem; border-radius: 8px; transition: 0.3s; }
+        .post-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .post-meta { font-size: 0.8rem; color: #888; margin-bottom: 0.5rem; }
+        .post-card h2 { margin: 0.5rem 0; color: #333; }
+        .read-more { color: var(--primary-color); text-decoration: none; font-size: 0.9rem; }
+
+        /* 侧边栏 */
+        aside { background: #fff; padding: 1.5rem; border-radius: 8px; height: fit-content; }
+        .avatar { width: 80px; height: 80px; background: #ddd; border-radius: 50%; margin-bottom: 1rem; }
+
+        @media (max-width: 768px) { .main-container { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>欢迎来到我的世界线</h1>
-        <p>这是用 GitHub Pages 搭建的个人站点</p>
-    </header>
-
-    <div class="container">
-        <section id="about">
-            <h2>关于我</h2>
-            <p>你好！我是一个正在探索代码奥秘的研究者。目前正在学习如何把想法转化为现实。</p>
-        </section>
-
-        <section id="projects">
-            <h2>我的实验项目</h2>
-            <ul>
-                <li><strong>项目 A：</strong> 一个伟大的开始</li>
-                <li><strong>项目 B：</strong> 还在构思中的黑科技</li>
-            </ul>
-        </section>
-
-        <section id="interact">
-            <h2>实验室交互</h2>
-            <p>点击下方按钮，观察世界线的变动：</p>
-            <button onclick="changeMessage()">观测观测点</button>
-            <p id="demo-text">等待观测中...</p>
-        </section>
+<nav>
+    <div class="logo">My Lab Log</div>
+    <div class="links">
+        <a href="#">首页</a> | <a href="#">归档</a>
     </div>
+</nav>
 
-    <script>
-        // 这里是 JavaScript：赋予网页灵魂
-        function changeMessage() {
-            const messages = [
-                "一切都是命运石之门的选择！",
-                "代码成功运行了，这不科学……",
-                "Hello World! 你好，世界！",
-                "正在同步 1.048596% 的世界线..."
-            ];
-            const randomIndex = Math.floor(Math.random() * messages.length);
-            document.getElementById('demo-text').innerText = messages[randomIndex];
-        }
-    </script>
+<div class="main-container">
+    <main>
+        <article class="post-card">
+            <div class="post-meta">2026-01-17 · 分类：代码实验</div>
+            <h2><a href="post1.html" style="text-decoration:none; color:inherit;">第一篇博客：如何跳出循环？</a></h2>
+            <p>今天在写一个无限循环时差点把电脑烧了，这绝对不是我的错，是编译器的锅...</p>
+            <a href="post1.html" class="read-more">阅读全文 →</a>
+        </article>
+
+        <article class="post-card">
+            <div class="post-meta">2026-01-16 · 分类：日常</div>
+            <h2>论碳酸饮料对大脑开发的必要性</h2>
+            <p>如果不喝 Dr Pepper，大脑的运转速度会下降 40% 以上，这是有科学依据的...</p>
+            <a href="#" class="read-more">阅读全文 →</a>
+        </article>
+    </main>
+
+    <aside>
+        <div class="avatar"></div> <h3>关于博主</h3>
+        <p>一名普通的科研人员，偶尔写写代码。正在寻找通往 Beta 世界线的路径。</p>
+        <hr>
+        <h4>热门标签</h4>
+        <p>#HTML #JavaScript #理论物理</p>
+    </aside>
+</div>
 
 </body>
 </html>
