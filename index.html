@@ -4,33 +4,60 @@ layout: default
 
 <script src="https://cdn.tailwindcss.com"></script>
 
-<div class="max-auto max-w-4xl px-4 py-8">
-    <h1 class="text-4xl font-bold text-gray-800 mb-8 border-b-4 border-indigo-500 inline-block">
-        实验日志列表
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold text-gray-800 mb-6 border-b-4 border-indigo-500 inline-block">
+        {{ site.title }}
     </h1>
+    <p class="text-gray-500 mb-10">{{ site.description }}</p>
 
-    <div class="grid gap-6">
-        {% for post in site.posts %}
-        <article class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
-                    {{ post.date | date: "%Y年%m月%d日" }}
-                </span>
+    <div class="mb-12 flex flex-wrap gap-3 items-center">
+        <span class="text-sm font-bold text-gray-400 uppercase tracking-widest">分类检索:</span>
+        {% for category in site.categories %}
+        <a href="#{{ category | first }}" class="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300 transition-all shadow-sm">
+            {{ category | first }} <span class="ml-1 text-gray-400">({{ category | last | size }})</span>
+        </a>
+        {% endfor %}
+    </div>
+
+    <div class="space-y-16">
+        {% for category in site.categories %}
+        <section id="{{ category | first }}" class="scroll-mt-20">
+            <div class="flex items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 uppercase tracking-tight">
+                    # {{ category | first }}
+                </h2>
+                <div class="flex-grow ml-4 h-px bg-gray-200"></div>
             </div>
-            <h2 class="text-2xl font-semibold mb-3">
-                <a href="{{ post.url }}" class="text-gray-900 hover:text-indigo-600 transition-colors">
-                    {{ post.title }}
-                </a>
-            </h2>
-            <p class="text-gray-600 line-clamp-2">
-                {{ post.excerpt | strip_html | truncate: 100 }}
-            </p>
-            <div class="mt-4">
-                <a href="{{ post.url }}" class="text-indigo-500 font-medium hover:underline">
-                    查看实验详情 →
-                </a>
+
+            <div class="grid gap-6">
+                {% for post in category.last %}
+                <article class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
+                            {{ post.date | date: "%Y年%m月%d日" }}
+                        </span>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-3">
+                        <a href="{{ post.url }}" class="text-gray-900 hover:text-indigo-600 transition-colors">
+                            {{ post.title }}
+                        </a>
+                    </h3>
+                    <p class="text-gray-600 line-clamp-2 text-sm">
+                        {{ post.excerpt | strip_html | truncate: 120 }}
+                    </p>
+                    <div class="mt-4">
+                        <a href="{{ post.url }}" class="text-indigo-500 font-medium hover:underline text-sm">
+                            进入观测详情 →
+                        </a>
+                    </div>
+                </article>
+                {% endfor %}
             </div>
-        </article>
+        </section>
         {% endfor %}
     </div>
 </div>
+
+<style>
+    html { scroll-behavior: smooth; }
+</style>
