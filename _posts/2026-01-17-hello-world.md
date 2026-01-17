@@ -2,7 +2,7 @@
 layout: post
 title:  "第一篇研究日志：连接建立"
 date:   2026-01-17
-categories: 实验记录
+categories: 代码
 ---
 
 ### 实验目的
