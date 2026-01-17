@@ -22,7 +22,7 @@ layout: default
         -webkit-backdrop-filter: blur(15px);
         border: 1px solid rgba(255, 255, 255, 0.4);
     }
-    /* 让 Markdown 里的列表重新显示圆点和缩进 */
+    
     .prose ul {
         list-style-type: disc !important;
         padding-left: 1.5rem !important;
@@ -32,15 +32,19 @@ layout: default
         margin-bottom: 0.5rem !important;
     }    
 
-    /* 让自我介绍正文的段落自动首行缩进 */
     article.prose p {
-        text-indent: 2em; /* 2em 正好等于两个字的宽度 */
-        margin-bottom: 1.25rem; /* 保持段落间的呼吸感 */
+        text-indent: 2em;
+        margin-bottom: 1.25rem;
     }
 
-    /* 如果你不希望标题也缩进，可以加上这个限制 */
     article.prose h1, article.prose h2, article.prose h3 {
         text-indent: 0;
+    }
+
+    /* 社交图标悬停微震动效果 */
+    .social-link:hover {
+        transform: translateY(-2px);
+        transition: transform 0.2s ease;
     }
 </style>
 
@@ -49,7 +53,6 @@ layout: default
         
         <main class="lg:col-span-3 space-y-8">
             <div class="glass-container p-8 md:p-12 rounded-[2.5rem] shadow-2xl">
-                
                 <div class="flex flex-col items-center text-center mb-12">
                     <div class="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden mb-4">
                         <img src="https://github.com/Roundaboutt.png" alt="Avatar" class="w-full h-full object-cover">
@@ -60,7 +63,6 @@ layout: default
                 </div>
 
                 {% assign about_page = site.pages | where: "title", "关于我" | first %}
-                
                 {% if about_page %}
                     <article class="prose prose-indigo max-w-none text-gray-700 leading-relaxed border-t border-gray-100 pt-8">
                         {{ about_page.content | markdownify }}
@@ -68,16 +70,32 @@ layout: default
                 {% else %}
                     <div class="text-center py-10 text-gray-400">
                         <p class="text-xl font-bold">未检测到 about.md</p>
-                        <p class="mt-2 text-sm">请创建一个 title 为 "关于我" 的 Markdown 文件。</p>
                     </div>
                 {% endif %}
             </div>
         </main>
 
-        <aside class="lg:col-span-1">
+        <aside class="lg:col-span-1 space-y-6">
+            <div class="glass-container p-6 rounded-[2rem] shadow-xl">
+                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 text-center">实验室外链 / SOCIAL</h3>
+                <div class="flex flex-col gap-3">
+                    <a href="https://www.zhihu.com/people/zhao-wen-dao-10-12" target="_blank" class="social-link flex items-center gap-3 px-4 py-2 bg-white/50 rounded-xl text-sm text-gray-600 hover:text-blue-500 hover:bg-white transition-all">
+                        <span class="font-bold text-blue-500">知</span>
+                        <span>知乎主页</span>
+                    </a>
+                    <a href="https://github.com/Roundaboutt" target="_blank" class="social-link flex items-center gap-3 px-4 py-2 bg-white/50 rounded-xl text-sm text-gray-600 hover:text-indigo-600 hover:bg-white transition-all">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                        <span>GitHub</span>
+                    </a>
+                    <a href="jscroundabout@gmail.com" class="social-link flex items-center gap-3 px-4 py-2 bg-white/50 rounded-xl text-sm text-gray-600 hover:text-red-500 hover:bg-white transition-all">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        <span>发送邮件</span>
+                    </a>
+                </div>
+            </div>
+
             <div class="glass-container p-6 rounded-[2rem] shadow-xl sticky top-10">
                 <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 text-center">博文分类 / INDEX</h3>
-                
                 <nav class="flex flex-col gap-3">
                     {% if site.categories.size > 0 %}
                         {% for category in site.categories %}
