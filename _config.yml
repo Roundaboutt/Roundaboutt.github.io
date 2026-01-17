@@ -1,4 +1,4 @@
-title: 我的研究日志
-author: Christina
+title: Layla's blog
+author: Layla
 description: 这里记录了关于时间机器和代码的思考。
-theme: minima  # 这是 GitHub 自带的一个极简主题，先用它跑通！
+remote_theme: pages-themes/cayman@v0.2.0
