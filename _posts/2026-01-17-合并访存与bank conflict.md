@@ -25,7 +25,7 @@ __global__ void transpose_v1(float* output, float* input, int nx, int ny){
 }
 ```
 
-<img src="/images/合并访存与bank_conflict_1.png" alt="6d8679248f0d80bc5f8f837c45ebeb46" style="zoom:50%;" />
+<img src="/images/合并访存与bank_conflict/合并访存与bank_conflict_1.png" alt="6d8679248f0d80bc5f8f837c45ebeb46" style="zoom:50%;" />
 
 唯一需要注意的地方就是坐标的映射，图里已经画的很清楚了。
 
@@ -37,7 +37,7 @@ __global__ void transpose_v1(float* output, float* input, int nx, int ny){
 
 如下图所示，一个共有32个线程的warp访问显存，每个线程需要访问一个float(4B)
 
-<img src="/images/合并访存与bank_conflict_2.png" alt="387c1bf23bd9b77c691b9d3a43c21571" style="zoom: 50%;" />
+<img src="/images/合并访存与bank_conflict/合并访存与bank_conflict_2.png" alt="387c1bf23bd9b77c691b9d3a43c21571" style="zoom: 50%;" />
 
 如果0号线程访问的地址恰好是32的整数倍(如图)，那整个sector的数据都会用上，恰好读入4个sector。这种情况就是合并访存。
 
@@ -45,7 +45,7 @@ __global__ void transpose_v1(float* output, float* input, int nx, int ny){
 
 下面再看看**非合并**访存的例子:
 
-<img src="/images/合并访存与bank_conflict_3.png" alt="c9a6aab02a07a0010db643f3a9e72f78" style="zoom:50%;" />
+<img src="/images/合并访存与bank_conflict/合并访存与bank_conflict_3.png" alt="c9a6aab02a07a0010db643f3a9e72f78" style="zoom:50%;" />
 
 0号线程访问的地址是65，这就导致需要读入5个sector。而最后读入的那个sector大部分的数据都是不需要的，这就降低了访存的效率。
 
@@ -53,7 +53,7 @@ __global__ void transpose_v1(float* output, float* input, int nx, int ny){
 
 假设我们设置block大小为(32,8)，每个线程读一个float(4B)：
 
-<img src="/images/合并访存与bank_conflict_4.png" alt="cd4f0fb2ae6cf31f993ba939fcfb518a" style="zoom:50%;" />
+<img src="/images/合并访存与bank_conflict/合并访存与bank_conflict_4.png" alt="cd4f0fb2ae6cf31f993ba939fcfb518a" style="zoom:50%;" />
 
 在read的时候，这就是完美的合并访存，一个warp刚好读入4个sector，数据不多也不少。
 
@@ -63,7 +63,7 @@ __global__ void transpose_v1(float* output, float* input, int nx, int ny){
 
 那如果把block设置为(8,32)呢？
 
-<img src="/images/合并访存与bank_conflict_5.png" alt="66ad1055ff86b220a62d3282dbb4738b" style="zoom: 67%;" />
+<img src="/images/合并访存与bank_conflict/合并访存与bank_conflict_5.png" alt="66ad1055ff86b220a62d3282dbb4738b" style="zoom: 67%;" />
 
 可以看到，在read阶段，正好读入4个sector
 
