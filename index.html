@@ -29,61 +29,59 @@ layout: default
     <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
         
         <main class="lg:col-span-3 space-y-8">
-            <div class="glass-container p-8 rounded-[2.5rem] shadow-2xl">
-                <header class="mb-12 border-b border-gray-200 pb-8">
-                    <h1 class="text-5xl font-black text-gray-900 mb-3 tracking-tighter">{{ site.title }}</h1>
-                    <p class="text-xl text-gray-500 italic">{{ site.description }}</p>
-                </header>
+            <div class="glass-container p-8 md:p-12 rounded-[2.5rem] shadow-2xl">
+                
+                {% assign about_page = site.pages | where: "title", "关于我" | first %}
+                
+                {% if about_page %}
+                    <header class="mb-8 border-b border-gray-200 pb-8">
+                        <h1 class="text-5xl font-black text-gray-900 mb-3 tracking-tighter">{{ about_page.title }}</h1>
+                        <p class="text-xl text-gray-500 italic">Connected to Laboratory Database...</p>
+                    </header>
 
-                <div class="space-y-20">
-                    {% if site.categories.size > 0 %}
-                        {% for category in site.categories %}
-                        <section id="{{ category | first }}" class="scroll-mt-24">
-                            <h2 class="text-2xl font-bold text-gray-800 mb-6"># {{ category | first }}</h2>
-                            <div class="grid gap-6">
-                                {% for post in category.last %}
-                                <article class="bg-white/50 p-6 rounded-2xl border border-white/60 hover:bg-white transition-all shadow-sm">
-                                    <h3 class="text-2xl font-bold"><a href="{{ post.url }}">{{ post.title }}</a></h3>
-                                    <p class="text-gray-500 text-sm mt-2">{{ post.excerpt | strip_html | truncate: 100 }}</p>
-                                </article>
-                                {% endfor %}
-                            </div>
-                        </section>
-                        {% endfor %}
-                    {% else %}
-                        <div class="text-center py-20 text-gray-400">
-                            <p class="text-2xl font-bold">暂无实验样本 (No Posts Found)</p>
-                            <p class="mt-2 text-sm">请检查 _posts 文件夹中是否有 .md 文件，并设置了 categories。</p>
-                        </div>
-                    {% endif %}
-                </div>
+                    <article class="prose prose-indigo max-w-none text-gray-700 leading-relaxed">
+                        {{ about_page.content | markdownify }}
+                    </article>
+                {% else %}
+                    <div class="text-center py-20 text-gray-400">
+                        <p class="text-2xl font-bold">未检测到 about.md</p>
+                        <p class="mt-2 text-sm">请创建一个 title 为 "关于我" 的 Markdown 文件。</p>
+                    </div>
+                {% endif %}
             </div>
         </main>
 
         <aside class="lg:col-span-1">
             <div class="glass-container p-6 rounded-[2rem] shadow-xl sticky top-10">
-                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">分类导航 / INDEX</h3>
+                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">博文分类 / INDEX</h3>
                 
                 <nav class="flex flex-col gap-3">
                     {% if site.categories.size > 0 %}
                         {% for category in site.categories %}
-                        <a href="#{{ category | first }}" class="group flex items-center justify-between p-3 rounded-xl hover:bg-indigo-600 transition-all">
-                            <span class="font-bold text-gray-700 group-hover:text-white"># {{ category | first }}</span>
-                            <span class="text-xs bg-indigo-100 text-indigo-600 px-2 py-1 rounded-lg group-hover:bg-white">{{ category | last | size }}</span>
-                        </a>
+                        <div class="group border-b border-gray-100 last:border-0 pb-4">
+                            <span class="text-xs font-bold text-indigo-500 mb-2 block tracking-widest uppercase"># {{ category | first }}</span>
+                            <div class="flex flex-col gap-2">
+                                {% for post in category.last limit:5 %}
+                                <a href="{{ post.url }}" class="text-sm text-gray-600 hover:text-indigo-600 transition-all flex items-start">
+                                    <span class="mr-2 opacity-30">•</span>
+                                    <span class="line-clamp-1">{{ post.title }}</span>
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
                         {% endfor %}
                     {% else %}
-                        <p class="text-xs text-gray-400 italic">尚未发现任何时间线分类...</p>
+                        <p class="text-xs text-gray-400 italic">尚未发现博文样本...</p>
                     {% endif %}
                 </nav>
 
-                <div class="mt-10 pt-6 border-t border-gray-200">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-indigo-500 border-2 border-white shadow-md"></div>
-                        <div>
-                            <p class="font-bold text-gray-900 leading-none">{{ site.author }}</p>
-                            <p class="text-[10px] text-gray-400 mt-1 uppercase">Lab Member 004</p>
-                        </div>
+                <div class="mt-8 pt-6 border-t border-gray-200 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                        {{ site.author | slice: 0 }}
+                    </div>
+                    <div>
+                        <p class="font-bold text-gray-900 leading-none">{{ site.author }}</p>
+                        <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest">Researcher 004</p>
                     </div>
                 </div>
             </div>
