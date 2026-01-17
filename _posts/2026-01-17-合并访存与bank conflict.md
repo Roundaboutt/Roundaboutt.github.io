@@ -25,7 +25,7 @@ __global__ void transpose_v1(float* output, float* input, int nx, int ny){
 }
 ```
 
-<img src="images/合并访存与bank conflict_1.png" alt="6d8679248f0d80bc5f8f837c45ebeb46" style="zoom:50%;" />
+<img src="/images/合并访存与bank_conflict_1.png" alt="6d8679248f0d80bc5f8f837c45ebeb46" style="zoom:50%;" />
 
 唯一需要注意的地方就是坐标的映射，图里已经画的很清楚了。
 
@@ -37,7 +37,7 @@ __global__ void transpose_v1(float* output, float* input, int nx, int ny){
 
 如下图所示，一个共有32个线程的warp访问显存，每个线程需要访问一个float(4B)
 
-<img src="images/合并访存与bank conflict_2.png" alt="387c1bf23bd9b77c691b9d3a43c21571" style="zoom: 50%;" />
+<img src="/images/合并访存与bank_conflict_2.png" alt="387c1bf23bd9b77c691b9d3a43c21571" style="zoom: 50%;" />
 
 如果0号线程访问的地址恰好是32的整数倍(如图)，那整个sector的数据都会用上，恰好读入4个sector。这种情况就是合并访存。
 
@@ -45,7 +45,7 @@ __global__ void transpose_v1(float* output, float* input, int nx, int ny){
 
 下面再看看**非合并**访存的例子:
 
-<img src="images/合并访存与bank conflict_3.png" alt="c9a6aab02a07a0010db643f3a9e72f78" style="zoom:50%;" />
+<img src="/images/合并访存与bank_conflict_3.png" alt="c9a6aab02a07a0010db643f3a9e72f78" style="zoom:50%;" />
 
 0号线程访问的地址是65，这就导致需要读入5个sector。而最后读入的那个sector大部分的数据都是不需要的，这就降低了访存的效率。
 
@@ -53,7 +53,7 @@ __global__ void transpose_v1(float* output, float* input, int nx, int ny){
 
 假设我们设置block大小为(32,8)，每个线程读一个float(4B)：
 
-<img src="images/合并访存与bank conflict_4.png" alt="cd4f0fb2ae6cf31f993ba939fcfb518a" style="zoom:50%;" />
+<img src="/images/合并访存与bank_conflict_4.png" alt="cd4f0fb2ae6cf31f993ba939fcfb518a" style="zoom:50%;" />
 
 在read的时候，这就是完美的合并访存，一个warp刚好读入4个sector，数据不多也不少。
 
@@ -63,7 +63,7 @@ __global__ void transpose_v1(float* output, float* input, int nx, int ny){
 
 那如果把block设置为(8,32)呢？
 
-<img src="images/合并访存与bank conflict_5.png" alt="66ad1055ff86b220a62d3282dbb4738b" style="zoom: 67%;" />
+<img src="/images/合并访存与bank_conflict_5.png" alt="66ad1055ff86b220a62d3282dbb4738b" style="zoom: 67%;" />
 
 可以看到，在read阶段，正好读入4个sector
 
@@ -248,13 +248,13 @@ Results2 Match!
 
 (8,32)
 
-![image-20251013213959039](images/合并访存与bank conflict_8.png)
+![image-20251013213959039](/images/合并访存与bank_conflict_8.png)
 
 
 
 (32,8)
 
-![image-20251013214049737](images/合并访存与bank conflict_7.png)
+![image-20251013214049737](/images/合并访存与bank_onflict_7.png)
 
 在write过程中，可以看到L1 cache -> L2 cache过程中，后者的数据传输量更大。这就是因为非合并访存读入了更多的sector。
 
@@ -292,7 +292,7 @@ __global__ void transpose_v2(float* output, float* input, int M, int N){
 
 input_start的坐标计算如图所示：
 
-<img src="images/合并访存与bank conflict_9.png" alt="image-20251013214049737" style="zoom:50%;" />
+<img src="/images/合并访存与bank_conflict_9.png" alt="image-20251013214049737" style="zoom:50%;" />
 
 output_start也是同理。
 
@@ -328,7 +328,7 @@ FETCH_FLOAT4(input_start[(threadIdx.y * 4 + i) * N + threadIdx.x * 4]);
 
 如果配置成(32,8)，那每个block负责的数据块大小则是32x128
 
-![image-20251013214049737](images/合并访存与bank conflict_9t.png)
+![image-20251013214049737](/images/合并访存与bank_conflict_9t.png)
 
 由图可以看出，read阶段是合并访存，只需要读64个sector；而write阶段属于非合并访存，需要读128个sector。每次读入的sector只有一半的数据是有效的。
 
@@ -336,7 +336,7 @@ FETCH_FLOAT4(input_start[(threadIdx.y * 4 + i) * N + threadIdx.x * 4]);
 
 如果配置成(16,16)，则都可以实现合并访存。
 
-<img src="images/合并访存与bank conflict_10.png" alt="537cee99b7d1e640f96256bb800333f2" style="zoom:50%;" />
+<img src="/images/合并访存与bank_conflict_10.png" alt="537cee99b7d1e640f96256bb800333f2" style="zoom:50%;" />
 
 由图可知，在write阶段读入的sector所有数据都是有效的。
 
@@ -509,11 +509,11 @@ Results2 Match!
 
 (32,8):
 
-![image-20251014183410400](images/合并访存与bank conflict_11.png)
+![image-20251014183410400](/images/合并访存与bank_conflict_11.png)
 
 (16,16):
 
-![image-20251014183453325](images/合并访存与bank conflict_12.png)
+![image-20251014183453325](/images/合并访存与bank_conflict_12.png)
 
 L1 cache -> L2 cache中的数据传输量大约是前者的一半
 
@@ -554,7 +554,7 @@ SM的工作原理：
 
 什么是**bank conflict**呢？我们假设每个字是 4B：
 
-<img src="images/合并访存与bank conflict_13.png" alt="6a9f9a04f22aad8e992865c7dbfc51ec" style="zoom:50%;" />
+<img src="/images/合并访存与bank_conflict_13.png" alt="6a9f9a04f22aad8e992865c7dbfc51ec" style="zoom:50%;" />
 
 那么：
 
@@ -624,7 +624,7 @@ __global__ void transpose_v2(float* output, float* input, int M, int N) {
 
 我们来分析bank conflict情况：
 
-<img src="images/合并访存与bank conflict_14.png" alt="7c163f828e478baf3b587c629c46aaeb" style="zoom:67%;" />
+<img src="/images/合并访存与bank_conflict_14.png" alt="7c163f828e478baf3b587c629c46aaeb" style="zoom:67%;" />
 
 
 
@@ -632,7 +632,7 @@ __global__ void transpose_v2(float* output, float* input, int M, int N) {
 
 在tile -> output阶段，相邻线程访问的地址都相差BLKDIM_X * sizeof(float)字节，warp中的所有线程都访问的是同一个warp，性能直接下降了32倍！
 
-![image-20251015154220343](images/合并访存与bank conflict_15.png)
+![image-20251015154220343](/images/合并访存与bank_conflict_15.png)
 
 在nsight compute中可以看到，bank conflict主要集中在shared load中，也就是 tile -> output。而shared store的bank conflict为0，也就是input -> tile。这与我们刚才的分析相吻合。
 
@@ -685,7 +685,7 @@ __global__ void transpose_v2(float* output, float* input, int M, int N) {
 
 可以看到，虽然没有完全避免bank conflict，但是相比之前性能已经提升了很多了。
 
-![image-20251015162232070](images/合并访存与bank conflict_16.png)
+![image-20251015162232070](/images/合并访存与bank_conflict_16.png)
 
 在nsight compute中我们可以看到，shared load阶段的bank conflict已经大大减少了。
 
