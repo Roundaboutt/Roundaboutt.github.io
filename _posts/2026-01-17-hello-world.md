@@ -1,8 +1,8 @@
 ---
 layout: post
-title:  "第一篇研究日志：连接建立"
+title:  "Hello World"
 date:   2026-01-17
-categories: Hello World
+categories: HelloWorld
 ---
 
 
