@@ -59,24 +59,37 @@
     <script>hljs.highlightAll();</script>
 
     <style>
-        /* 针对 content 里的 HTML 标签进行美化 */
-        .prose h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2rem; border-left: 4px solid #6366f1; padding-left: 1rem; color: #1f2937; }
-        .prose p { margin-bottom: 1.5rem; color: #4b5563; }
+        /* 1. 核心缩进逻辑：针对文章正文段落 */
+        .prose p { 
+            text-indent: 2em !important; /* 强制缩进两个中文字符宽 */
+            margin-bottom: 1.5rem; 
+            color: #4b5563; 
+        }
+
+        /* 2. 逻辑修正：特定的非段落区域不应该缩进，否则会产生位移偏差 */
+        .prose h1, .prose h2, .prose h3, .prose h4, 
+        .prose li, .prose blockquote, .prose pre, .prose img {
+            text-indent: 0 !important;
+        }
+
+        /* 3. 列表内部的段落如果缩进会很奇怪，必须重置 */
+        .prose li p {
+            text-indent: 0 !important;
+            margin-bottom: 0.5rem;
+        }
+
+        /* 4. 博文样式美化补丁 */
+        .prose h2 { 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            margin-top: 2rem; 
+            border-left: 4px solid #6366f1; 
+            padding-left: 1rem; 
+            color: #1f2937; 
+        }
         .prose img { border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
         .prose code { background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
-        .prose pre code { background: none; padding: 0; }
         .prose blockquote { border-left: 4px solid #e5e7eb; font-style: italic; color: #6b7280; padding-left: 1.5rem; }
-
-        /* 让自我介绍正文的段落自动首行缩进 */
-        article.prose p {
-            text-indent: 2em; /* 2em 正好等于两个字的宽度 */
-            margin-bottom: 1.25rem; /* 保持段落间的呼吸感 */
-        }
-
-        /* 如果你不希望标题也缩进，可以加上这个限制 */
-        article.prose h1, article.prose h2, article.prose h3 {
-            text-indent: 0;
-        }
     </style>
 </body>
 </html>
