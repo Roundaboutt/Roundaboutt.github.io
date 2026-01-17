@@ -22,3 +22,9 @@ permalink: /about/
     -   偶尔会挤出时间看书和电影
     -   喜欢收藏唱片
 -   **地点：**武汉/永州
+
+
+
+
+
+>   "El Psy Congroo"
