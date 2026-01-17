@@ -1,68 +1,14 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Christina 的研究日志</title>
-    <style>
-        :root { --primary-color: #5d3f6a; --bg-color: #f9f9f9; }
-        body { font-family: sans-serif; background: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
-        
-        /* 导航栏 */
-        nav { background: #fff; padding: 1rem 10%; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; }
-        nav a { text-decoration: none; color: var(--primary-color); font-weight: bold; }
+---
+layout: default
+---
 
-        /* 主体布局：左边文章，右边侧栏 */
-        .main-container { max-width: 1000px; margin: 2rem auto; display: grid; grid-template-columns: 3fr 1fr; gap: 2rem; padding: 0 1rem; }
+<h1>实验日志列表</h1>
 
-        /* 文章卡片 */
-        .post-card { background: #fff; padding: 1.5rem; margin-bottom: 1.5rem; border-radius: 8px; transition: 0.3s; }
-        .post-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .post-meta { font-size: 0.8rem; color: #888; margin-bottom: 0.5rem; }
-        .post-card h2 { margin: 0.5rem 0; color: #333; }
-        .read-more { color: var(--primary-color); text-decoration: none; font-size: 0.9rem; }
-
-        /* 侧边栏 */
-        aside { background: #fff; padding: 1.5rem; border-radius: 8px; height: fit-content; }
-        .avatar { width: 80px; height: 80px; background: #ddd; border-radius: 50%; margin-bottom: 1rem; }
-
-        @media (max-width: 768px) { .main-container { grid-template-columns: 1fr; } }
-    </style>
-</head>
-<body>
-
-<nav>
-    <div class="logo">My Lab Log</div>
-    <div class="links">
-        <a href="#">首页</a> | <a href="#">归档</a>
-    </div>
-</nav>
-
-<div class="main-container">
-    <main>
-        <article class="post-card">
-            <div class="post-meta">2026-01-17 · 分类：代码实验</div>
-            <h2><a href="post1.html" style="text-decoration:none; color:inherit;">第一篇博客：如何跳出循环？</a></h2>
-            <p>今天在写一个无限循环时差点把电脑烧了，这绝对不是我的错，是编译器的锅...</p>
-            <a href="post1.html" class="read-more">阅读全文 →</a>
-        </article>
-
-        <article class="post-card">
-            <div class="post-meta">2026-01-16 · 分类：日常</div>
-            <h2>论碳酸饮料对大脑开发的必要性</h2>
-            <p>如果不喝 Dr Pepper，大脑的运转速度会下降 40% 以上，这是有科学依据的...</p>
-            <a href="#" class="read-more">阅读全文 →</a>
-        </article>
-    </main>
-
-    <aside>
-        <div class="avatar"></div> <h3>关于博主</h3>
-        <p>一名普通的科研人员，偶尔写写代码。正在寻找通往 Beta 世界线的路径。</p>
-        <hr>
-        <h4>热门标签</h4>
-        <p>#HTML #JavaScript #理论物理</p>
-    </aside>
-</div>
-
-</body>
-</html>
+<ul>
+  {% for post in site.posts %}
+    <li>
+      <span class="post-date">{{ post.date | date: "%b %d, %y" }}</span>
+      <a href="{{ post.url }}">{{ post.title }}</a>
+    </li>
+  {% endfor %}
+</ul>
