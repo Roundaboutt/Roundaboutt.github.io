@@ -66,6 +66,17 @@
         .prose code { background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; }
         .prose pre code { background: none; padding: 0; }
         .prose blockquote { border-left: 4px solid #e5e7eb; font-style: italic; color: #6b7280; padding-left: 1.5rem; }
+
+        /* 让自我介绍正文的段落自动首行缩进 */
+        article.prose p {
+            text-indent: 2em; /* 2em 正好等于两个字的宽度 */
+            margin-bottom: 1.25rem; /* 保持段落间的呼吸感 */
+        }
+
+        /* 如果你不希望标题也缩进，可以加上这个限制 */
+        article.prose h1, article.prose h2, article.prose h3 {
+            text-indent: 0;
+        }
     </style>
 </body>
 </html>
