@@ -242,7 +242,7 @@ Results2 Match!
 
 在nsight compute中：
 
-![Bank Conflict 描述](F:\my_website\Roundaboutt.github.io\images\合并访存与bank conflict_6.png)
+![Bank Conflict 描述](\my_website\Roundaboutt.github.io\images\合并访存与bank_conflict_6.png)
 
 
 
@@ -254,7 +254,7 @@ Results2 Match!
 
 (32,8)
 
-![image-20251013214049737](/images/合并访存与bank_onflict_7.png)
+![image-20251013214049737](/images/合并访存与bank_conflict_7.png)
 
 在write过程中，可以看到L1 cache -> L2 cache过程中，后者的数据传输量更大。这就是因为非合并访存读入了更多的sector。
 
