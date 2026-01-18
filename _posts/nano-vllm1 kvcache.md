@@ -38,7 +38,70 @@
 
 ![图片来自论文](F:\my_website\Roundaboutt.github.io\images\nano-vllm\4.jpg)
 
-我们可以看到，在逻辑上，每个 prompt 的 token 都是连续的，它们通过 block table 映射到不连续的内存块中。这样就做到了屋里内存中的不连续存储，也就彻底消除了外部碎片。逻辑内存相当于操作系统中的虚拟内存，每个block就是虚拟内存中的一个page。每个block的大小固定，在vLLM中默认大小为16，即可存储16个token的K/V值。
+我们可以看到，在逻辑上，每个 prompt 的 token 都是连续的，它们通过 block table 映射到不连续的内存块中。这样就做到了屋里内存中的不连续存储，也就彻底消除了外部碎片。逻辑内存相当于操作系统中的虚拟内存，每个block就是虚拟内存中的一个page。每个 block 的大小固定，在 vLLM 中默认大小为 16，即可存储 16 个 token 的 K/V 值。唯一可能产生内部碎片的情况在于，假如你有17个 token，在存入一个 block 后还剩一个 token，于是就智能
+
+
+
+前面说了，在传统的KVCache中，每个 seq 都需要分配一块最大的连续内存。但是在Paged Attention中，所有的 seq 共用同一个KVCache。如下图所示，这是两个 seq 同时使用一个KVCache时的情景。
+
+![image-20260118140916072](F:\my_website\Roundaboutt.github.io\images\nano-vllm\5.jpg)
+
+我们来看看在nano-vllm中对KVCache的分配：
+
+```python
+def allocate_kv_cache(self):
+    config = self.config
+    hf_config = config.hf_config
+
+    # 获取当前GPU的显存信息
+    free, total = torch.cuda.mem_get_info()
+    used = total - free
+
+    # 从上次重置以来，current 达到过的峰值
+    peak = torch.cuda.memory_stats()["allocated_bytes.all.peak"]
+    # 当前 PyTorch 分配器实际分配给 Tensor 的总字节数
+    current = torch.cuda.memory_stats()["allocated_bytes.all.current"]
+
+    # 计算单个物理块的尺寸：
+    num_kv_heads = hf_config.num_key_value_heads // self.world_size # 每个GPU上的KVheads
+    #每个头的维度(每个头的向量有多长)                       hidden_size是embedding的维度, 把hidden_size平均分给每个头
+    head_dim = getattr(hf_config, "head_dim", hf_config.hidden_size // hf_config.num_attention_heads)
+    # 一个块的字节数 = (K和V) * 层数 * 每块token数 * 每层头数 * 每头维度 * 每个数字的字节数
+    # 一个完整的物理块，它能够容纳 block_size 个 token 在模型所有 num_hidden_layers 层中的全部 Key 和 Value 数据，所需要的总字节数。
+    block_bytes = 2 * hf_config.num_hidden_layers * self.block_size * num_kv_heads * head_dim * hf_config.torch_dtype.itemsize
+
+    # 计算总共可以分配多少个块
+    config.num_kvcache_blocks = int(total * config.gpu_memory_utilization - used - peak + current) // block_bytes
+    assert config.num_kvcache_blocks > 0
+
+    # 创建巨大的 KV 缓存 Tensor  第一个维度2用于区分是k还是v
+    self.kv_cache = torch.empty(2, hf_config.num_hidden_layers, config.num_kvcache_blocks, self.block_size, num_kv_heads, head_dim)
+    layer_id = 0
+    # 遍历所有的子模块, 将KVCache的物理块绑定到模型的属性中
+    for module in self.model.modules():
+        # 找有k_cache 和 v_cache 接口的模块(注意力模块)
+        if hasattr(module, "k_cache") and hasattr(module, "v_cache"):
+            module.k_cache = self.kv_cache[0, layer_id]
+            module.v_cache = self.kv_cache[1, layer_id]
+            layer_id += 1
+```
+
+我们可以看到，KVCache的维度是：
+
+```python
+(2, hf_config.num_hidden_layers, config.num_kvcache_blocks, self.block_size, num_kv_heads, head_dim)
+(K/V, 哪一层, 层中的哪一块, 块中的哪个token, token的哪一个head, 具体的数值)
+```
+
+
+
+
+
+
+
+
+
+
 
 
 

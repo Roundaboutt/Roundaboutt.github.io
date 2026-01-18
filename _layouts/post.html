@@ -9,33 +9,43 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.27.4/tocbot.css">
     
     <style>
-        /* 基础样式补丁 */
-        .prose h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2rem; border-left: 4px solid #6366f1; padding-left: 1rem; color: #1f2937; text-indent: 0 !important; }
-        .prose h3 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; color: #374151; text-indent: 0 !important; }
-        .prose img { border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); text-indent: 0 !important; }
+        /* --- 核心 Markdown 样式对齐 --- */
+        /* 标题大小重定义，严格遵循 MD 层次 */
+        .prose h1 { font-size: 2.25rem !important; font-weight: 800 !important; margin-bottom: 2rem !important; text-indent: 0 !important; }
+        .prose h2 { font-size: 1.85rem !important; font-weight: 700 !important; margin-top: 2.5rem !important; margin-bottom: 1.25rem !important; border-left: 6px solid #6366f1; padding-left: 1rem; color: #111827; text-indent: 0 !important; }
+        .prose h3 { font-size: 1.5rem !important; font-weight: 600 !important; margin-top: 2rem !important; margin-bottom: 1rem !important; color: #1f2937; text-indent: 0 !important; }
         
-        .prose p { text-indent: 2em !important; margin-bottom: 1.5rem; color: #374151; }
-        .prose li p, .prose blockquote p { text-indent: 0 !important; }
-        .prose h1, .prose h2, .prose h3, .prose h4 { text-indent: 0 !important; }
+        /* 段落与文本 */
+        .prose p { text-indent: 2em !important; margin-bottom: 1.25rem; color: #374151; line-height: 1.8; }
+        .prose strong { color: #111827; font-weight: 700; }
+        
+        /* 强制重置非段落元素的缩进 */
+        .prose li p, .prose blockquote p, .prose th, .prose td { text-indent: 0 !important; }
+        .prose h1, .prose h2, .prose h3, .prose h4, .prose pre, .prose img { text-indent: 0 !important; }
 
-        /* 代码块美化 */
-        .prose pre { background-color: #1a1b26 !important; border-radius: 12px !important; padding: 1.25rem !important; border: 1px solid #2f334d !important; text-indent: 0 !important; margin: 2rem 0 !important; }
-        .prose code { font-family: 'Fira Code', monospace !important; font-size: 0.9rem !important; background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 0.25rem; }
-        .prose pre code { background: transparent !important; padding: 0 !important; color: #a9b1d6 !important; line-height: 1.6 !important; }
+        /* 列表样式修复 */
+        .prose ul { list-style-type: disc !important; padding-left: 1.5rem !important; margin-top: 1rem !important; margin-bottom: 1rem !important; }
+        .prose ol { list-style-type: decimal !important; padding-left: 1.5rem !important; }
+        .prose li { margin-bottom: 0.5rem !important; }
+
+        /* 图片与引用 */
+        .prose img { border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); margin: 2rem auto !important; }
+        .prose blockquote { border-left: 4px solid #e5e7eb; font-style: italic; color: #6b7280; padding-left: 1.5rem; margin: 2rem 0; }
+
+        /* 代码块优化 */
+        .prose pre { background-color: #1a1b26 !important; border-radius: 1rem !important; padding: 1.5rem !important; border: 1px solid #2f334d !important; margin: 1.5rem 0 !important; overflow-x: auto; }
+        .prose pre code { background: transparent !important; padding: 0 !important; color: #a9b1d6 !important; font-family: 'Fira Code', monospace !important; font-size: 0.95rem !important; text-indent: 0 !important; }
         
-        /* 目录特供样式 (玻璃拟态) */
+        /* 目录与布局样式 */
         .toc-container { position: sticky; top: 6rem; max-height: calc(100vh - 8rem); overflow-y: auto; }
-        .toc-list { list-style: none !important; padding-left: 1rem !important; }
-        .toc-link { color: #6b7280; transition: all 0.2s; font-size: 0.875rem; display: block; padding: 0.25rem 0; }
-        .toc-link:hover { color: #6366f1; }
-        .is-active-link { color: #6366f1 !important; font-weight: bold; }
-        .is-active-link::before { background-color: #6366f1 !important; }
+        .toc-link { color: #6b7280; font-size: 0.875rem; display: block; padding: 0.25rem 0; text-decoration: none; }
+        .is-active-link { color: #6366f1 !important; font-weight: 700; }
 
         .glass-container {
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
 
         body {
@@ -46,33 +56,34 @@
         }
     </style>
 </head>
-<body class="text-gray-800 leading-relaxed min-h-screen">
+<body class="text-gray-800 antialiased min-h-screen">
     <nav class="glass-container border-b sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="/" class="text-indigo-600 font-bold hover:text-indigo-800 transition-colors">← 返回首页</a>
-            <span class="text-gray-500 text-sm font-medium">{{ page.title | truncate: 20 }}</span>
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="/" class="flex items-center gap-2 text-indigo-600 font-bold hover:text-indigo-800 transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                返回观测站
+            </a>
+            <div class="hidden md:block text-gray-400 text-xs font-mono uppercase tracking-widest">Target Acquisition: {{ page.title | truncate: 15 }}</div>
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 py-12">
-        
-        <main class="lg:col-span-9 space-y-8">
-            <article class="glass-container p-8 md:p-12 rounded-[2.5rem] shadow-2xl">
-                <header class="mb-10 text-center">
-                    <div class="flex items-center justify-center gap-2 mb-4">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 px-6 py-12">
+        <main class="lg:col-span-9">
+            <article class="glass-container p-8 md:p-16 rounded-[3rem] shadow-2xl">
+                <header class="mb-12">
+                    <div class="flex flex-wrap gap-2 mb-6">
                         {% for category in page.categories %}
-                        <span class="px-3 py-1 bg-indigo-500 text-white text-xs font-bold rounded-full uppercase">
-                            {{ category }}
+                        <span class="px-4 py-1 bg-indigo-600 text-white text-[10px] font-black rounded-full tracking-tighter uppercase shadow-lg shadow-indigo-200">
+                            # {{ category }}
                         </span>
                         {% endfor %}
                     </div>
-                    <h1 class="text-4xl md:text-5xl font-black text-gray-900 mb-6 tracking-tight">
+                    <h1 class="text-4xl md:text-5xl font-black text-gray-900 leading-[1.1] mb-8">
                         {{ page.title }}
                     </h1>
-                    <div class="text-gray-400 text-sm flex justify-center items-center gap-4">
-                        <time>📅 {{ page.date | date: "%Y年%m月%d日" }}</time>
-                        <span class="h-1 w-1 bg-gray-300 rounded-full"></span>
-                        <span>✍️ {{ site.author }}</span>
+                    <div class="flex items-center gap-6 text-gray-400 text-sm font-medium border-y border-gray-100/50 py-4">
+                        <span class="flex items-center gap-2">📅 {{ page.date | date: "%Y-%m-%d" }}</span>
+                        <span class="flex items-center gap-2">✍️ {{ site.author }}</span>
                     </div>
                 </header>
 
@@ -80,10 +91,10 @@
                     {{ content }}
                 </div>
 
-                <section class="mt-16 border-t border-gray-100 pt-10">
-                    <h3 class="text-2xl font-black text-gray-900 mb-8 flex items-center gap-2">
-                        <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
-                        评论反馈 / Comments
+                <footer class="mt-20 pt-10 border-t border-gray-100">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-10 flex items-center gap-3">
+                        <span class="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center text-sm">#</span>
+                        研究讨论 / Discussions
                     </h3>
                     <script src="https://giscus.app/client.js"
                             data-repo="Roundaboutt/Roundaboutt.github.io"
@@ -100,37 +111,32 @@
                             crossorigin="anonymous"
                             async>
                     </script>
-                </section>
+                </footer>
             </article>
         </main>
 
         <aside class="hidden lg:block lg:col-span-3">
-            <div class="toc-container glass-container p-6 rounded-[2rem] shadow-xl">
-                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
-                    目录 / CONTENTS
+            <div class="toc-container glass-container p-8 rounded-[2.5rem] shadow-xl">
+                <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                    <div class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse"></div>
+                    目录导航 / TOC
                 </h3>
                 <div class="js-toc"></div>
             </div>
         </aside>
-
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.27.4/tocbot.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
     <script>
-        // 初始化代码高亮
         hljs.highlightAll();
-
-        // 初始化目录生成器
         tocbot.init({
             tocSelector: '.js-toc',
             contentSelector: '.js-toc-content',
             headingSelector: 'h1, h2, h3',
             hasInnerContainers: true,
             scrollSmooth: true,
-            scrollSmoothOffset: -100, // 抵消顶部导航栏的高度
+            scrollSmoothOffset: -100,
             headingsOffset: 100
         });
     </script>
