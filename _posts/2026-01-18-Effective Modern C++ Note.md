@@ -1,3 +1,13 @@
+---
+layout: post
+title: "Effective Modern C++ Note"
+date: 2026-01-18
+categories: code
+author: "Layla"
+---
+
+
+
 # item1：理解模板类型推导
 
 
