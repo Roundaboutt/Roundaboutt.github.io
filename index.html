@@ -115,28 +115,31 @@ layout: default
                 </div>
             </div>
 
-            <div class="glass-container p-6 rounded-[2rem] shadow-xl sticky top-10">
-                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 text-center">博文分类 / INDEX</h3>
-                <nav class="flex flex-col gap-3">
-                    {% if site.categories.size > 0 %}
-                        {% for category in site.categories %}
-                        <div class="group border-b border-gray-100 last:border-0 pb-4">
-                            <span class="text-xs font-bold text-indigo-500 mb-2 block tracking-widest uppercase"># {{ category | first }}</span>
-                            <div class="flex flex-col gap-2">
-                                {% for post in category.last limit:5 %}
-                                <a href="{{ post.url }}" class="text-sm text-gray-600 hover:text-indigo-600 transition-all flex items-start">
-                                    <span class="mr-2 opacity-30">•</span>
-                                    <span class="line-clamp-1">{{ post.title }}</span>
-                                </a>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-xs text-gray-400 italic text-center">尚未发现博文样本...</p>
-                    {% endif %}
-                </nav>
-            </div>
+                <div class="border-t border-gray-100 pt-10">
+                    <h3 class="text-2xl font-black text-gray-900 mb-8 flex items-center gap-3">
+                        <svg class="w-7 h-7 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                        </svg>
+                        留言板 / Guestbook
+                    </h3>
+                    
+                    <script src="https://giscus.app/client.js"
+                            data-repo="Roundaboutt/Roundaboutt.github.io"
+                            data-repo-id="R_kgDONpS1OA" 
+                            data-category="Announcements"
+                            data-category-id="DIC_kwDONpS1OM4CmO8V"
+                            data-mapping="specific"
+                            data-term="Guestbook" 
+                            data-strict="0"
+                            data-reactions-enabled="1"
+                            data-emit-metadata="0"
+                            data-input-position="top"
+                            data-theme="light"
+                            data-lang="zh-CN"
+                            crossorigin="anonymous"
+                            async>
+                    </script>
+                </div>
         </aside>
     </div>
 </div>
