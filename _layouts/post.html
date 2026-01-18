@@ -42,10 +42,15 @@
         .is-active-link { color: #6366f1 !important; font-weight: 700; }
 
         .glass-container {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            /* 背景色从 rgba(255, 255, 255, 0.8) 改为 0.5 */
+            background: rgba(255, 255, 255, 0.5); 
+            
+            /* 增加模糊度来抵消高透明度带来的阅读干扰 */
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            
+            /* 边框也调淡一点，显得更自然 */
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         body {

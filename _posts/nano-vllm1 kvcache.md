@@ -12,13 +12,15 @@
 
 那么问题来了：我们在计算完第 n+1 个token后，是不是需要把整个seq(长度为n+1)作为输入继续计算，但是这个seq的前 n 个token在上一轮计算中已经计算过了！于是，整个seq的计算只有第 n+1 个token是新的，而前 n 个token的计算全部都在重复！于是我们想，为什么不把前 n 个token计算得到的K、V矩阵存起来呢，这样不就省去了一大笔计算开销吗？于是KVCache就出现了！
 
+---
+
 ## KVCache的原理
 
 <img src="F:\my_website\Roundaboutt.github.io\images\nano-vllm\2.jpg" alt="2" style="zoom:67%;" />
 
 由上图我们可以很清晰地看到，每次只需要输入上一步生成的token进行计算。当前输入的token计算注意力分数时直接调用之前的KVCache进行计算，省去了计算前 n 个token的KV矩阵的过程，并把当前token新生成的K、V矩阵追加到KVCache的末尾。
 
-
+---
 
 ## KVCache的缺陷
 
@@ -30,7 +32,7 @@
 
 因为不知道生成的序列到底会有多长，传统做法通常会按照模型的**最大上下文长度（Max Context Length）**或者一个很大的预设值来预分配显存。假设模型最大支持 2048 长度。 哪怕你只问了一句“你好”，占用了 2 个 token，剩下的 2046 个 token 的位置也被这一单请求给锁死了，其他请求根本用不了。在 vLLM 的论文里提到，传统系统的显存浪费极其严重，**甚至高达 60% - 80% 的显存都是被这种“预留但未被使用”的空白填满的**。 这叫**内部碎片（Internal Fragmentation）**。
 
-
+---
 
 ## Paged Attention
 
@@ -95,13 +97,27 @@ def allocate_kv_cache(self):
 
 
 
+**Paged Attention另一个高效的机制就是"Copy-on-Write"**
 
+传统的KVCache在面临好几条相同的 seq 时会把每个 seq 的KV值都计算一遍，然后全部存起来。而实际上，根本就没必要存好几份相同的KV，这也是内存的浪费。
 
+我们来看看 Paged Attention 会怎么做。
 
+![image-20260118145643368](F:\my_website\Roundaboutt.github.io\images\nano-vllm\6.jpg)
 
+我们输入了两个相同的 prompt："Four score and seven years ago our"，其中"Four score and seven"存储在 block7，"years ago our"存储在 block1，两个 seq 只需要存储一份KV值。此时 block1 和block7 的 Ref count（引用计数）都是2，代表一共有两个 seq 共用这个 block 中存储的KV。
 
+接下来，prompt1 生成了下一个 token: "fathers"，而 prompt2 生成的下一个 token 是"mothers"。这时，整个 block1 中的内容都会复制到另一个 block中（这里假设是 block3）。现在，"mothers" 放入 block1 中，"fathers"放入 block3 中。block1 和 block3 的 Ref count 都变为1。
 
+有了**Copy-on-Write**机制后，不管你要生成多少个回答，Prompt 的 KV Cache 永远只需要存一份。
 
+如果你的 Prompt 有 2000 个 token，生成 10 个回答：
+
+-   无 CoW： 显存占用 $2000 \times 10 = 20000$ tokens。
+
+-   有 CoW： 显存占用 $2000 \times 1 = 2000$ tokens。
+
+    节省了 90% 的显存！这意味着你可以塞进更多的并发请求（Batch Size 变大）。
 
 
 
