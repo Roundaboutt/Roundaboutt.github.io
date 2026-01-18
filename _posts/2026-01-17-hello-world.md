@@ -2,7 +2,7 @@
 layout: post
 title:  "Hello World"
 date:   2026-01-17
-categories: HelloWorld
+categories: Think
 ---
 
 
