@@ -129,33 +129,51 @@ def allocate_kv_cache(self):
 
 在传统的 Beam Search 中，我们每一轮都会保留得分最高的 k 个候选（即 Beam Width）。麻烦点在于：随着步数增加，不同的候选序列可能会有**共同的祖先**。为了保持每个候选序列的独立性，系统不得不为每一个 Beam 完整地复制一份 KV Cache。哪怕这 k 个序列的前 99% 都是一模一样的，也要在显存里存 k 遍。
 
-而 Paged Attention 利用分页和 Copy-on-Write 机制完美地解决了这个问题。我们分三个阶段来看：
+而 Paged Attention 利用分页和 Copy-on-Write 机制完美地解决了这个问题。假设 beam width = 4：
 
-1.   根节点共享
+当所有的候选序列都源自同一个 Prompt 时，它们在物理上**共用同一组物理块**。内存里只有一份 Prompt 的 KV Cache，所有的 Beam（Beam 1 到 Beam 4）的页表都指向相同的物理地址 `[Block 1, Block 2, ...]`，这些物理块的 `ref_count = 4`。
 
-当所有的候选序列都源自同一个 Prompt 时，它们在物理上**共用同一组物理块**。内存里只有一份 Prompt 的 KV Cache，所有的 Beam（比如 Beam 1 到 Beam 5）的页表都指向相同的物理地址 `[Block 1, Block 2, ...]`，这些物理块的 `ref_count = 5`。
+![image-20260119195634896](F:\my_website\Roundaboutt.github.io\images\nano-vllm\7.jpg)
 
-2.   分支选择
+并且在 decode 过程中，随着逻辑块 block 被淘汰，它占有的物理内存也被释放。Block 0、Block 1 和 Block 3，这三块内存在整个过程中只存了一份，却同时支撑着 4 个 Beam 的运算。如果没有 Paged Attention，则所有的block 都得复制 4 次。
 
-在每一轮推理后，模型会从 $k \times V$ （其中 k 是 beam width，V 是词表大小）个候选字中选出新的 Top-$k$。之后会出现以下几种情况：
+---
 
--   **情况 A：** 某个 Beam 继续发展，它只需要在它的最后一个物理块里填新词。如果这个块是共享的，就触发 **CoW** 复制出一个新块，自己玩自己的。
--   **情况 B：** 某个 Beam 表现太差，被淘汰了。这时候系统会把该 Beam 对应的物理块的**引用计数减 1**。
--   **情况 C：** 某个优秀的 Beam 被“克隆”成了两个新的候选分支。这时候系统只需要**复制页表**，并把相关物理块的**引用计数加 1**。
+## 代码详解
 
-3.   动态清理
+理论部分说完了，我们来看看 nano-vllm 中的代码是如何实现 Paged Attention 的。
 
-当一个物理块的 `ref_count` 降为 0 时（意味着所有 Beam 都不再需要这段记忆），这块显存会被立刻回收，放回 `self.kv_cache` 的大池子里供其他请求使用
+在 block_manager.py 中，Class Block 表示一个物理块，Class BlockManager 用于对物理块的管理。
 
-
+![image-20260119202423965](F:\my_website\Roundaboutt.github.io\images\nano-vllm\8.jpg)
 
 
 
+我们先来看物理块 Block：
 
+```python
+class Block:
+    # 一小块物理GPU内存, 可以想象成操作系统中的一个"内存页"
+    def __init__(self, block_id):
+        self.block_id = block_id    # 物理块唯一ID
+        self.ref_count = 0          # 引用计数: 有多少sequence正在使用这个块
+        self.hash = -1              # 内容哈希值: 用于快速识别和复用
+        self.token_ids = []         # 存储的token ID, 用于哈希碰撞检测
 
+    # 通过对块内的token内容进行哈希计算，管理器可以快速判断新来的请求前缀是否与缓存中已有的某个块内容完全相同。
+    # 如果哈希匹配，就可以直接复用，避免了对这部分prompt的重复计算，极大地提升了处理相似请求时的速度。
+    # token_ids 用于在极罕见的哈希碰撞情况下进行最终确认。
+    
+    def update(self, hash: int, token_ids: list[int]):
+        self.hash = hash
+        self.token_ids = token_ids
 
+    def reset(self):
+        self.ref_count = 1
+        self.hash = -1
+        self.token_ids = []
 
-
+```
 
 
 
