@@ -99,6 +99,8 @@ def allocate_kv_cache(self):
 
 **Paged Attention另一个高效的机制就是"Copy-on-Write"**
 
+### parallel sampling
+
 传统的KVCache在面临好几条相同的 seq 时会把每个 seq 的KV值都计算一遍，然后全部存起来。而实际上，根本就没必要存好几份相同的KV，这也是内存的浪费。
 
 我们来看看 Paged Attention 会怎么做。
@@ -118,6 +120,38 @@ def allocate_kv_cache(self):
 -   有 CoW： 显存占用 $2000 \times 1 = 2000$ tokens。
 
     节省了 90% 的显存！这意味着你可以塞进更多的并发请求（Batch Size 变大）。
+
+    
+
+### beam search
+
+同样，Paged Attention 在 beam search 中也非常适用。
+
+在传统的 Beam Search 中，我们每一轮都会保留得分最高的 k 个候选（即 Beam Width）。麻烦点在于：随着步数增加，不同的候选序列可能会有**共同的祖先**。为了保持每个候选序列的独立性，系统不得不为每一个 Beam 完整地复制一份 KV Cache。哪怕这 k 个序列的前 99% 都是一模一样的，也要在显存里存 k 遍。
+
+而 Paged Attention 利用分页和 Copy-on-Write 机制完美地解决了这个问题。我们分三个阶段来看：
+
+1.   根节点共享
+
+当所有的候选序列都源自同一个 Prompt 时，它们在物理上**共用同一组物理块**。内存里只有一份 Prompt 的 KV Cache，所有的 Beam（比如 Beam 1 到 Beam 5）的页表都指向相同的物理地址 `[Block 1, Block 2, ...]`，这些物理块的 `ref_count = 5`。
+
+2.   分支选择
+
+在每一轮推理后，模型会从 $k \times V$ （其中 k 是 beam width，V 是词表大小）个候选字中选出新的 Top-$k$。之后会出现以下几种情况：
+
+-   **情况 A：** 某个 Beam 继续发展，它只需要在它的最后一个物理块里填新词。如果这个块是共享的，就触发 **CoW** 复制出一个新块，自己玩自己的。
+-   **情况 B：** 某个 Beam 表现太差，被淘汰了。这时候系统会把该 Beam 对应的物理块的**引用计数减 1**。
+-   **情况 C：** 某个优秀的 Beam 被“克隆”成了两个新的候选分支。这时候系统只需要**复制页表**，并把相关物理块的**引用计数加 1**。
+
+3.   动态清理
+
+当一个物理块的 `ref_count` 降为 0 时（意味着所有 Beam 都不再需要这段记忆），这块显存会被立刻回收，放回 `self.kv_cache` 的大池子里供其他请求使用
+
+
+
+
+
+
 
 
 
