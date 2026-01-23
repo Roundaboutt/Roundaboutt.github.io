@@ -151,6 +151,8 @@ def allocate_kv_cache(self):
 
 我们先来看物理块 Block：
 
+### Class Block：物理块的属性
+
 ```python
 class Block:
     # 一小块物理GPU内存, 可以想象成操作系统中的一个"内存页"
@@ -174,6 +176,135 @@ class Block:
         self.token_ids = []
 
 ```
+
+---
+
+### compute_hash：计算哈希值
+
+如何确定 Block 是否可以复用呢？我们来看看 Class BlockManager 中的 compute_hash 方法：
+
+```python
+def compute_hash(cls, token_ids: list[int], prefix: int = -1):  # 用于计算一个token列表的哈希值
+    h = xxhash.xxh64()
+    if prefix != -1:
+        h.update(prefix.to_bytes(8, "little"))
+    h.update(np.array(token_ids).tobytes())
+    return h.intdigest()
+```
+
+它的核心目标是：**为一个 Block 生成一个唯一的、能够反映其历史上下文的哈希值**。
+
+想象一下这句话：“The sky is blue.”。其中 `blue` 这个词的KV缓存，是基于前面的 `"The sky is "` 计算出来的。
+
+现在看另一句话：“My car is blue.”。同样是 `blue` 这个词，但它的KV缓存是基于前面的 `"My car is "` 计算出来的。
+
+显然，这两句话里 `blue` 的KV缓存值是**完全不同**的。
+
+因此，当我们为一个`Block`计算哈希值时，仅仅哈希这个块自己的内容是绝对不够的。我们必须把它前面的所有块的内容也考虑进来。`compute_hash` 函数通过一个非常巧妙的“链式哈希”方法解决了这个问题，而 `prefix` 参数就是实现这个链条的关键。
+
+
+
+```python
+if prefix != -1:
+    h.update(prefix.to_bytes(8, "little"))
+```
+
+-   **`prefix: int = -1`**: 这个参数代表**前一个块的哈希值**。默认值 `-1` 是一个哨兵值，表示“没有前一个块”，即当前块是序列的第一个块。
+-   **`if prefix != -1:`**: 这个判断检查当前块是否是序列的第一个块。
+-   **`h.update(...)`**: 向哈希计算器中添加内容。它接收字节（bytes）作为输入。
+-   `prefix.to_bytes(8, "little")`:
+    -   `prefix` 是一个64位的整数（因为我们用的是`xxh64`）。
+    -   哈希函数处理的是字节流，而不是整数。所以我们需要把这个64位的整数转换成8个字节（64位 / 8位/字节 = 8字节）。
+    -   `to_bytes(8, "little")` 就是执行这个转换的命令。`8`表示转换成8个字节，`"little"` 指定了字节序（小端序）
+
+**在计算当前块的哈希之前，我们首先把代表了整个历史的“前缀哈希”放进了搅拌机。这样一来，最终的哈希结果就自然而然地包含了历史信息。**
+
+```python
+h.update(np.array(token_ids).tobytes())
+```
+
+将已有的内容加入哈希计算器。`token_ids`是一个python整数列表，先转化成`numpy.array()`再转化成字节会快很多，因为`numpy.array()`在内存中是连续的。
+
+至此，哈希计算器中已经加入了两种内容：**历史哈希(prefix)**和**当前的内容(token_ids)**
+
+
+
+**示例：一个两块序列的哈希过程**
+
+假设序列是 `[A, B, C, D, E, F]`，块大小为3。
+
+1.  **处理第一个块 `[A, B, C]`**:
+    -   调用 `compute_hash([A, B, C], prefix=-1)`。
+    -   `if` 条件为假。
+    -   哈希计算器只处理 `[A, B, C]` 的字节。
+    -   返回结果 `Hash_0`。
+2.  **处理第二个块 `[D, E, F]`**:
+    -   调用 `compute_hash([D, E, F], prefix=Hash_0)`。
+    -   `if` 条件为真。
+    -   哈希计算器**首先**处理 `Hash_0` 的字节。
+    -   **然后**处理 `[D, E, F]` 的字节。
+    -   返回结果 `Hash_1`。
+
+`Hash_1` 的值既依赖于 `[D, E, F]`，也依赖于 `Hash_0`，而 `Hash_0` 又依赖于 `[A, B, C]`。因此，`Hash_1` 成功地成为了整个序列 `[A, B, C, D, E, F]` 的唯一指纹。如果第一个块是 `[X, Y, Z]`，那么第二个块即使内容仍然是 `[D, E, F]`，计算出的哈希值也将会完全不同。
+
+---
+
+### allocate：分配
+
+Class BlockManager 中的 allocate 方法用于给逻辑块分配物理内存。
+
+```python
+def allocate(self, seq: Sequence):
+    assert not seq.block_table
+    h = -1
+    cache_miss = False
+
+    # 遍历每一个逻辑块
+    for i in range(seq.num_blocks):
+        token_ids = seq.block(i)    # 当前逻辑块的token_ids
+        # 计算当前块的哈希值(依赖于前一个块的哈希)
+        # 注意! 只有装满的块才计算哈希并缓存
+        h = self.compute_hash(token_ids, h) if len(token_ids) == self.block_size else -1
+        # 在缓存中查找这个哈希
+        block_id = self.hash_to_block_id.get(h, -1)
+        if block_id == -1 or self.blocks[block_id].token_ids != token_ids:
+            cache_miss = True   # 未命中或哈希碰撞
+
+        if cache_miss:
+            # 缓存未命中：从空闲队列中取一个新块进行分配
+            block_id = self.free_block_ids[0]
+            block = self._allocate_block(block_id)
+        else:
+            # 缓存命中：复用已有的块
+            seq.num_cached_tokens += self.block_size
+            # 如果块已在使用
+            if block_id in self.used_block_ids:
+                block = self.blocks[block_id]
+                block.ref_count += 1    # 引用计数+1
+            # 如果块空闲, 则分配它
+            else:
+                block = self._allocate_block(block_id)
+
+        # 如果块是满的，就更新哈希表，用于未来的缓存                    
+        if h != -1:
+            block.update(h, token_ids)
+            self.hash_to_block_id[h] = block_id
+
+        # 将分配好的物理块ID记录到序列的块表 (block_table) 中
+        seq.block_table.append(block_id)
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
