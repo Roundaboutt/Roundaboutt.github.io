@@ -5,22 +5,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ page.title }} - {{ site.title }}</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.27.4/tocbot.css">
     
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']],
+          processEscapes: true
+        },
+        options: {
+          ignoreHtmlClass: 'tex2jax_ignore',
+          processHtmlClass: 'tex2jax_process'
+        }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
     <style>
         /* --- 核心 Markdown 样式对齐 --- */
-        /* 标题大小重定义，严格遵循 MD 层次 */
         .prose h1 { font-size: 2.25rem !important; font-weight: 800 !important; margin-bottom: 2rem !important; text-indent: 0 !important; }
         .prose h2 { font-size: 1.85rem !important; font-weight: 700 !important; margin-top: 2.5rem !important; margin-bottom: 1.25rem !important; border-left: 6px solid #6366f1; padding-left: 1rem; color: #111827; text-indent: 0 !important; }
         .prose h3 { font-size: 1.5rem !important; font-weight: 600 !important; margin-top: 2rem !important; margin-bottom: 1rem !important; color: #1f2937; text-indent: 0 !important; }
         
-        /* 段落与文本 */
+        /* 段落与文本逻辑 */
         .prose p { text-indent: 2em !important; margin-bottom: 1.25rem; color: #374151; line-height: 1.8; }
         .prose strong { color: #111827; font-weight: 700; }
         
-        /* 强制重置非段落元素的缩进 */
+        /* 强制重置非段落元素的缩进，防止布局崩溃 */
         .prose li p, .prose blockquote p, .prose th, .prose td { text-indent: 0 !important; }
         .prose h1, .prose h2, .prose h3, .prose h4, .prose pre, .prose img { text-indent: 0 !important; }
 
@@ -29,25 +44,20 @@
         .prose ol { list-style-type: decimal !important; padding-left: 1.5rem !important; }
         .prose li { margin-bottom: 0.5rem !important; }
 
-        /* 图片与引用 */
-        .prose img { border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); margin: 2rem auto !important; }
-        .prose blockquote { border-left: 4px solid #e5e7eb; font-style: italic; color: #6b7280; padding-left: 1.5rem; margin: 2rem 0; }
-
-        /* 代码块优化 */
+        /* 代码块与引用美化 */
         .prose pre { background-color: #1a1b26 !important; border-radius: 1rem !important; padding: 1.5rem !important; border: 1px solid #2f334d !important; margin: 1.5rem 0 !important; overflow-x: auto; }
         .prose pre code { background: transparent !important; padding: 0 !important; color: #a9b1d6 !important; font-family: 'Fira Code', monospace !important; font-size: 0.95rem !important; text-indent: 0 !important; }
-        
-        /* 目录与布局样式 */
+        .prose blockquote { border-left: 4px solid #e5e7eb; font-style: italic; color: #6b7280; padding-left: 1.5rem; margin: 2rem 0; }
+
+        /* 玻璃拟态效果与目录定位 */
         .toc-container { position: sticky; top: 6rem; max-height: calc(100vh - 8rem); overflow-y: auto; }
         .toc-link { color: #6b7280; font-size: 0.875rem; display: block; padding: 0.25rem 0; text-decoration: none; }
         .is-active-link { color: #6366f1 !important; font-weight: 700; }
 
         .glass-container {
             background: rgba(255, 255, 255, 0.4); 
-        
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
@@ -66,7 +76,7 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 返回观测站
             </a>
-            <div class="hidden md:block text-gray-400 text-xs font-mono uppercase tracking-widest">Target Acquisition: {{ page.title | truncate: 15 }}</div>
+            <div class="hidden md:block text-gray-400 text-xs font-mono uppercase tracking-widest">{{ page.title | truncate: 20 }}</div>
         </div>
     </nav>
 
@@ -90,7 +100,7 @@
                     </div>
                 </header>
 
-                <div class="prose prose-indigo prose-lg max-w-none js-toc-content">
+                <div class="prose prose-indigo prose-lg max-w-none js-toc-content tex2jax_process">
                     {{ content }}
                 </div>
 
