@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "CUDA Stream"
+title: "CUDA Stream and CUDA Graph"
 date: 2026-02-13
 categories: code
 author: "Layla"
