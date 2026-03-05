@@ -244,11 +244,17 @@ Results2 Match!
 
 ![Bank Conflict 描述](/images/合并访存与bank_conflict/合并访存与bank_conflict_6.png)
 
-
-
 (8,32)
 
 ![image-20251013213959039](/images/合并访存与bank_conflict/合并访存与bank_conflict_8.png)
+
+![a5b63aae8bb57d89c2566129285c1507](\images\合并访存与bank_conflict\17.png)
+
+我们关注Global Load 和 Global Store的Sectors/Request（每个请求对应的扇区数）
+
+在Load阶段为4，即一个 Warp（32 线程）总共需要 $32 \times 4 = 128$ 字节。这正好对应 4 个扇区。访存是完全合并的。
+
+在Store阶段为8，这与我们前面的分析完全相同。
 
 
 
@@ -256,7 +262,13 @@ Results2 Match!
 
 ![image-20251013214049737](/images/合并访存与bank_conflict/合并访存与bank_conflict_7.png)
 
+![e59c778693f93b9d03e45e97c2da28d2](\images\合并访存与bank_conflict\18.png)
+
 在write过程中，可以看到L1 cache -> L2 cache过程中，后者的数据传输量更大。这就是因为非合并访存读入了更多的sector。
+
+在Global Load阶段，Sectors/Request 仍然是4
+
+在Global Store阶段，变成了32，即非合并访存，这也证实了我们之前的分析。
 
 ---
 
