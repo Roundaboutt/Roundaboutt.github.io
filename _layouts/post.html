@@ -49,6 +49,13 @@
         .prose ol { list-style-type: decimal !important; padding-left: 1.5rem !important; }
         .prose li { margin-bottom: 0.5rem !important; }
 
+        /* Markdown 表格布局修复 */
+        .prose table { display: block; width: max-content; min-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 2rem 0; color: #1f2937; }
+        .prose th, .prose td { padding: 0.75rem 1rem; border: 1px solid #d1d5db; text-align: left; white-space: nowrap; }
+        .prose thead th { background: rgba(238, 242, 255, 0.9); color: #111827; font-weight: 700; }
+        .prose tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.45); }
+        .prose tbody tr:hover { background: rgba(238, 242, 255, 0.65); }
+
         /* 代码块与引用美化 */
         .prose pre { background-color: #1a1b26 !important; border-radius: 1rem !important; padding: 1.5rem !important; border: 1px solid #2f334d !important; margin: 1.5rem 0 !important; overflow-x: auto; }
         .prose pre code { background: transparent !important; padding: 0 !important; color: #a9b1d6 !important; font-family: 'Fira Code', monospace !important; font-size: 0.95rem !important; text-indent: 0 !important; }
